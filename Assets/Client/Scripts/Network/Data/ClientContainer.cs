@@ -10,15 +10,15 @@ namespace Network
         public List<ClientInfo> Clients => _clients;
 
 
-        public void Register(ushort id)
-        {
-            _clients.Contains()
-        }
+        //public void Register(ClientID id)
+        //{
+        //    //_clients.Contains()
+        //}
 
 
-        public bool Contains(ushort id)
-        {
+        //public bool Contains(ushort id)
+        //{
 
-        }
+        //}
     }
 }
