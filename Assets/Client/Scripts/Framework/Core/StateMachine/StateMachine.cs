@@ -1,19 +1,22 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace Framework.Core.State
 {
-    public class StateMachine
+    public class StateMachine<TState>
+        where TState : IState<TState>
     {
-        private readonly Dictionary<int, StateContext> _roots = new();
-        private StateContext _runningRoot = null; // Update対象（ルートのみトラッキング）
-        internal readonly SwitchQueue<StateContext> Queue = new();
+        private readonly Dictionary<int, StateContext<TState>> _roots = new();
+        private StateContext<TState> _runningRoot = null; // Update対象（ルートのみトラッキング）
+        internal readonly SwitchQueue<StateContext<TState>> Queue = new();
+        public TState State => _runningRoot?.State;
 
         #region Setup
 
         /// <summary>ルートイベントを登録</summary>
-        public StateContext AddRoot<TEnum>(TEnum id, IState state, int priority = 0) where TEnum : Enum
+        public StateContext<TState> AddRoot<TEnum>(TEnum id, TState state, int priority = 0) where TEnum : Enum
         {
             int key = Convert.ToInt32(id);
             if (_roots.ContainsKey(key))
@@ -21,7 +24,7 @@ namespace Framework.Core.State
                 DebugEx.LogError($"ID が既に登録されています: {key}");
                 return _roots[key];
             }
-            var ctx = new StateContext(key, priority, state, machine: this);
+            var ctx = new StateContext<TState>(key, priority, state, machine: this);
             _roots.Add(key, ctx);
             return ctx;
         }
@@ -29,7 +32,6 @@ namespace Framework.Core.State
         #endregion
 
         #region Frame
-
 
         public void Update()
         {
@@ -52,5 +54,39 @@ namespace Framework.Core.State
 
         #endregion
 
+        #region Global switching
+
+        /// <summary>
+        /// ステートの切り替え
+        /// </summary>
+        public void SwitchRoot<TEnum>(TEnum id) where TEnum : Enum
+            => SwitchRootForce(Convert.ToInt32(id));
+
+        public void SwitchRootForce(int rootId)
+        {
+            if (!_roots.TryGetValue(rootId, out var target))
+            {
+                DebugEx.LogError($"Root not found: {rootId}");
+                return;
+            }
+
+            if (_runningRoot != null)
+            {
+                // 稼働中のステートの終了予約
+                Queue.AddExit(_runningRoot);
+            }
+
+            // 指定ルートを入場予約（次のCallEnterで入場）
+            Queue.AddEnter(target);
+        }
+
+        #endregion
+
+        public void Clear()
+        {
+            Queue.Clear();
+            _roots.Clear();
+            _runningRoot = null;
+        }
     }
 }

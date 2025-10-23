@@ -5,16 +5,17 @@ namespace Framework.Core.State
 	/// <summary>
 	/// ステート実行のコンテキスト
 	/// </summary>
-	public sealed class StateContext : IEnter, IExit
+	public sealed class StateContext<TState> : IEnter, IExit
+		where TState : IState<TState>
 	{
 		public int Id { get; }
 		public int Priority { get; }
-		public IState State { get; }
-		public StateMachine Machine { get; }
+		public TState State { get; }
+		public StateMachine<TState> Machine { get; }
 
 		internal StateContext(
-			int id, int priority, IState state,
-			StateMachine machine)
+			int id, int priority, TState state,
+			StateMachine<TState> machine)
 		{
 			Id = id;
 			Priority = priority;
