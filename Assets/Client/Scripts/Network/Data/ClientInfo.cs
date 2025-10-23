@@ -5,11 +5,16 @@ using Unity.Netcode;
 namespace Network
 {
     [Serializable]
-    public class ClientID : IEquatable<ClientID>
+    public class ClientID : INetworkSerializable, IEquatable<ClientID>
     {
         public ulong Value = 0;
         public static readonly ClientID Empty = new ClientID(0);
         public ClientID(ulong id) { this.Value = id; }
+
+        public void NetworkSerialize<T>(BufferSerializer<T> serialize) where T : IReaderWriter
+        {
+            serialize.SerializeValue(ref Value);
+        }
 
         /// <summary>
         /// 等比較

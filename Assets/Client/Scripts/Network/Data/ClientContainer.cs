@@ -11,6 +11,11 @@ namespace Network
 
         public List<ClientInfo> Clients => _clients;
 
+        /// <summary>
+        /// クライアントの登録人数
+        /// </summary>
+        public int Count => _clients.Count;
+
 
         /// <summary>
         /// クライアントの情報を登録する
