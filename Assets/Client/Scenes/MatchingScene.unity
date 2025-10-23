@@ -698,8 +698,8 @@ GameObject:
   m_Component:
   - component: {fileID: 896581923}
   - component: {fileID: 896581921}
-  - component: {fileID: 896581922}
   - component: {fileID: 896581924}
+  - component: {fileID: 896581925}
   m_Layer: 0
   m_Name: Network Test
   m_TagString: Untagged
@@ -732,23 +732,6 @@ MonoBehaviour:
   AutoObjectParentSync: 1
   SyncOwnerTransformWhenParented: 1
   AllowOwnerToParent: 0
---- !u!114 &896581922
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 896581920}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 54c76ccb089a44e45ae2a452664a621a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ShowTopMostFoldoutHeaderGroup: 1
-  Transport: {fileID: 844592976}
-  Port: 7777
-  Ip: 127.0.0.1
-  MemberMax: 4
 --- !u!4 &896581923
 Transform:
   m_ObjectHideFlags: 0
@@ -776,6 +759,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d70339e3558c4084db00bf4dc9d2c713, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &896581925
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 896581920}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ef3e4532916226c4e903820a44b8bd4b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  Transport: {fileID: 844592976}
+  Port: 7777
+  Ip: 127.0.0.1
+  MemberMax: 4
 --- !u!1 &1127335773
 GameObject:
   m_ObjectHideFlags: 0
@@ -859,7 +859,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 896581922}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: Network.NetworkManagerEx, Assembly-CSharp
         m_MethodName: StartAsServer
         m_Mode: 1

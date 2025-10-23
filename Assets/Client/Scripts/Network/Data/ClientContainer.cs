@@ -53,5 +53,11 @@ namespace Network
             _clients.ForEach((ClientInfo info) => isContains = info.Id == id);
             return isContains;
         }
+
+
+        public void Clear()
+        {
+            _clients.Clear();
+        }
     }
 }

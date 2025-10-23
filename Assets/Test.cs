@@ -6,9 +6,9 @@ using UnityEngine;
 public class Test : MonoBehaviour
 {
     [Button()]
-    public void StartAsServer() => GetComponent<NetworkManagerEx>()?.StartAsServer();
+    public void StartAsServer() => GetComponent<NetworkController>()?.StartAsServer();
     [Button()]
-    public void StartAsClient() => GetComponent<NetworkManagerEx>()?.StartAsClient();
+    public void StartAsClient() => GetComponent<NetworkController>()?.StartAsClient();
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
