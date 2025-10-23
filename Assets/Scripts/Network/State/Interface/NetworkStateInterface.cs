@@ -1,12 +1,12 @@
-using Unity.VisualScripting;
+﻿using Framework.Core.State;
 using UnityEngine;
 
 namespace Network
 {
-    public abstract class INetworkState
+    public abstract class INetworkState : IState
     {
-        public virtual void OnEnter() { }
-        public virtual void OnUpdate() { }
-        public virtual void OnExit() { }
+        public override void OnEnter() { }
+        public override void OnUpdate() { }
+        public override void OnExit() { }
     }
 }

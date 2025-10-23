@@ -5,7 +5,7 @@ namespace Framework.Core.Event
     /// <summary>
     /// イベント基底。必要に応じて継承して振る舞いを定義。
     /// </summary>
-    public abstract class IEvent
+    public abstract class IEvent : IEnter, IUpdate, IExit
     {
         private EventContext _ctx;
 
