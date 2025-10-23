@@ -13,6 +13,8 @@
 //    /// </remarks>
 //    public class ServerLobbyState : INetworkState
 //    {
+//        public ServerLobbyState(NetworkProvider provider) : base(provider) { }
+
 //        public void StartAsClient()
 //        {
 //            /*--- 基本設定 ---*/
@@ -36,7 +38,7 @@
 //            }
 //        }
 
-//        public void StartAsHost()
+//        public override void OnEnter()
 //        {
 //            /*--- 基本設定 ---*/
 //            // ホスト
@@ -50,6 +52,11 @@
 //                return;
 //            }
 //        }
+
+//        private void _OpenTerminal()
+//        {
+
+//        }
 //    }
 
 
@@ -61,6 +68,7 @@
 //    /// </remarks>
 //    public class ClientLobbyState : INetworkState
 //    {
+//        public ClientLobbyState(NetworkProvider provider) : base(provider) { }
 
 //    }
 

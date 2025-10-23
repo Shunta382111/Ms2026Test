@@ -15,6 +15,8 @@ namespace Network
         /// 等比較
         /// </summary>
         public bool Equals(ClientID other) => Value == other.Value;
+
+        public override string ToString() => Value.ToString();
     }
 
 
@@ -28,9 +30,23 @@ namespace Network
             Ready
         }
 
+        /*--- フィールド ---*/
+
         public ClientID Id = ClientID.Empty;
         public FixedString64Bytes Name = new FixedString64Bytes();
         public ConnectionState State = ConnectionState.Wait;
+
+
+
+
+
+        /*--- メソッド ---*/
+
+        public ClientInfo() { }
+        public ClientInfo(ClientID id)
+        {
+            Id = id;
+        }
 
         public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
         {
