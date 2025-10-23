@@ -11,7 +11,7 @@ using UnityEngine;
 /// 既存のCustomEditorとも共存可（下の CanBeUsedWithChildren = true）。
 /// </summary>
 [CanEditMultipleObjects]
-[CustomEditor(typeof(UnityEngine.Object), true, isFallback = true)]
+[CustomEditor(typeof(UnityEngine.Object))]
 public class ButtonMethodsInspector : Editor
 {
     // 既存の派生Editor（Rendererや自作Editor）がある場合にも、末尾に追記できるようにする
@@ -19,6 +19,7 @@ public class ButtonMethodsInspector : Editor
 
     public override void OnInspectorGUI()
     {
+        Debug.Log("Hello");
         // まず通常のインスペクターを描画
         base.OnInspectorGUI();
 

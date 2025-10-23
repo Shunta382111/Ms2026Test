@@ -17,6 +17,8 @@ namespace Network
 
 
 
+
+
         /*--- メソッド ---*/
         public NetworkProvider(GameObject owner)
         {

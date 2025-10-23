@@ -19,5 +19,10 @@ namespace Network.Lobby
         {
             _provider = provider;
         }
+
+        public void StartAsServer()
+        {
+
+        }
     }
 }

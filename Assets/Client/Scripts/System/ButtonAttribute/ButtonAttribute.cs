@@ -4,7 +4,7 @@ using UnityEngine;
 
 [Conditional("UNITY_EDITOR")]
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
-public sealed class ButtonAttribute : PropertyAttribute
+public class ButtonAttribute : PropertyAttribute
 {
     /// 表示ラベル（null/空ならメソッド名）
     public readonly string Label;
