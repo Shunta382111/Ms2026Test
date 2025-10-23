@@ -20,10 +20,10 @@ namespace Network
 
 
         /*--- メソッド ---*/
-        public NetworkProvider(GameObject owner)
+        public NetworkProvider(GameObject owner, UnityTransport transport)
         {
             GameObject = owner;
-            Transport = GetOrAddComponent<UnityTransport>(owner);
+            Transport = transport;
         }
     }
 }

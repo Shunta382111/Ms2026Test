@@ -4,12 +4,14 @@ using Unity.Netcode.Transports.UTP;
 using Unity.Netcode;
 using Framework;
 using Network.Lobby;
+using Framework.Attribute;
 
 namespace Network
 {
     public class NetworkManagerEx : NetworkSingleton<NetworkManagerEx>, IInitializable
     {
         private NetworkProvider _provider = null;
+        [SerializeField] public UnityTransport Transport = null;
         [SerializeField] public ushort Port = 7777;
         [SerializeField] public string Ip = "127.0.0.1";
         [SerializeField] public uint MemberMax = 4;
@@ -20,7 +22,6 @@ namespace Network
 
         public ConnectionController _connection = null;
 
-        [Button()]
         public void StartAsServer() => _connection.StartAsServer();
 
         [Button("クライアント起動")]
@@ -34,7 +35,7 @@ namespace Network
 
         public void Initialise()
         {
-            _provider = new NetworkProvider(gameObject);
+            _provider = new NetworkProvider(gameObject, Transport);
             _connection = new ConnectionController(_provider, Port);
 
             _isInitialized = true;
