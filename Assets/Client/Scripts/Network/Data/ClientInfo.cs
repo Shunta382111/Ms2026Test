@@ -7,7 +7,7 @@ namespace Network
     [Serializable]
     public class ClientID : INetworkSerializable, IEquatable<ClientID>
     {
-        public ulong Value = 0;
+        public ulong Value;
         public static readonly ClientID Empty = new ClientID(0);
         public ClientID(ulong id) { this.Value = id; }
 
@@ -37,9 +37,9 @@ namespace Network
 
         /*--- フィールド ---*/
 
-        public ClientID Id = ClientID.Empty;
-        public FixedString64Bytes Name = new FixedString64Bytes();
-        public ConnectionState State = ConnectionState.Wait;
+        public ClientID Id;
+        public FixedString64Bytes Name;
+        public ConnectionState State;
 
 
 
@@ -47,10 +47,11 @@ namespace Network
 
         /*--- メソッド ---*/
 
-        public ClientInfo() { }
         public ClientInfo(ClientID id)
         {
             Id = id;
+            Name = new FixedString64Bytes();
+            State = ConnectionState.Wait;
         }
 
         public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter

@@ -6,22 +6,28 @@ using UnityEditor.PackageManager;
 
 namespace Network
 {
-    public class ConnectionController 
+    public class ServerController
     {
-        NetworkController _controller = null;
-        UnityTransport _transport = null;
-        ClientContainer _clientContainer = null;
+        private NetworkController _controller = null;
+        private UnityTransport _transport = null;
+        private ClientContainer _clientContainer = null;
+
+        /// <summary>
+        /// [サーバー] 接続可能フラグ
+        /// </summary>
+        public bool EnableServerConnected { get; private set; } = false;
 
 
-        public ConnectionController(NetworkController controller, UnityTransport transport, ClientContainer clientContainer)
+
+        /*--- メソッド ---*/
+
+        public ServerController(NetworkController controller, UnityTransport transport, ClientContainer clientContainer)
         {
             _controller = controller;
             _transport = transport;
             _clientContainer = clientContainer;
         }
 
-
-        #region Server (サーバー)
 
         /// <summary>
         /// サーバーを起動
@@ -91,6 +97,21 @@ namespace Network
         }
 
         /// <summary>
+        /// [サーバー] クライアントとの接続を有効化する
+        /// </summary>
+        public void EnableServerConnecting() => EnableServerConnected = true;
+
+        /// <summary>
+        /// [クライアント] クライアントとの接続を有効化する
+        /// </summary>
+        public void DisableServerConnecting() => EnableServerConnected = true;
+
+
+
+
+        /*--- メソッド : private ---*/
+
+        /// <summary>
         /// クライントの接続情報をサーバーに記録する
         /// </summary>
         /// <remarks>
@@ -102,6 +123,7 @@ namespace Network
             if (!NetworkManager.Singleton.IsServer) return; // サーバーかチェック
             ClientID clientId = new ClientID(id);
 
+            // IDが既に登録されている
             if (_clientContainer.Contains(clientId))
             {
                 DebugEx.LogError($"クライアントが接続を要求しましたが、既に ID が登録されているため、失敗しました　ID: {id}");
@@ -109,10 +131,19 @@ namespace Network
                 return;
             }
 
+            // 接続人数が上限
             bool isMemberMax = _clientContainer.Count >= _controller.MemberMax;
             if (isMemberMax)
             {
                 DebugEx.LogError($"クライアントの接続人数が最大数を超えました　最大人数: {isMemberMax}");
+                NetworkManager.Singleton.DisconnectClient(id); // 接続をきる
+                return;
+            }
+
+            // 接続可能フラグがオフ
+            if (!EnableServerConnected)
+            {
+                DebugEx.LogError($"サーバーの接続フラグがオフです");
                 NetworkManager.Singleton.DisconnectClient(id); // 接続をきる
                 return;
             }
@@ -172,54 +203,5 @@ namespace Network
             NetworkManager.Singleton.OnClientConnectedCallback -= _OnRequestConnectionFromClient;
             NetworkManager.Singleton.OnClientDisconnectCallback -= _OnRequestDesconnectionFromClient;
         }
-
-        #endregion
-
-
-        #region Client (クライアント)
-
-        /// <summary>
-        /// クライアントの起動
-        /// </summary>
-        /// <returns>
-        /// true: 起動成功<br/>
-        /// false: 起動失敗
-        /// </returns>
-        public bool StartAsClient()
-        {
-            /*--- 基本設定 ---*/
-            // クライアント
-            _transport.SetConnectionData(_controller.Ip, _controller.Port);
-
-            bool isSuccess = NetworkManager.Singleton.StartClient();
-            if (!isSuccess)
-            {
-                DebugEx.LogError($"サーバーへの接続に失敗しました");
-                return false;
-            }
-
-
-            var id = new ClientID(NetworkManager.Singleton.LocalClientId);
-            DebugEx.Log($"サーバーへ接続しました");
-            return true;
-        }
-
-        /// <summary>
-        /// [クライアント] クライアントを停止
-        /// </summary>
-        /// <returns>
-        /// true: 停止成功<br/>
-        /// false: 停止失敗
-        /// </returns>
-        public bool StopAsClient()
-        {
-            if (!NetworkManager.Singleton.IsClient) return false; // クライアントかチェック
-
-            NetworkManager.Singleton.Shutdown(); // 接続をきる
-            DebugEx.Log($"サーバーから切断しました");
-            return true;
-        }
-
-        #endregion
     }
 }

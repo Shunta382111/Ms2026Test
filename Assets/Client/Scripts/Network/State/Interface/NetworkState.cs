@@ -5,14 +5,6 @@ namespace Network
 {
     public class INetworkState : IState<INetworkState>
     {
-        //public NetworkProvider Provider { get; private set; } = null;
-
-
-        //public INetworkState(NetworkProvider provider)
-        //{
-        //    Provider = provider;
-        //}
-
         /// <summary>
         /// [サーバー] クライアントから接続が発生
         /// </summary>

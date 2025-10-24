@@ -13,9 +13,10 @@ namespace Framework.Core.State
         internal readonly SwitchQueue<StateContext<TState>> Queue = new();
         public TState State => _runningRoot?.State;
 
-        #region Setup
 
-        /// <summary>ルートイベントを登録</summary>
+        /// <summary>
+        /// ルートステートを登録
+        /// </summary>
         public StateContext<TState> AddRoot<TEnum>(TEnum id, TState state, int priority = 0) where TEnum : Enum
         {
             int key = Convert.ToInt32(id);
@@ -29,40 +30,17 @@ namespace Framework.Core.State
             return ctx;
         }
 
-        #endregion
-
-        #region Frame
-
-        public void Update()
-        {
-            // 1) ルートEnter実行（当フレームはUpdate参加させない）
-            var enteredThisFrame = Queue.CallEnter();
-
-            // 2) 既存稼働中ルートをUpdate
-            _runningRoot?.Update();
-
-            // 3) Exit実行（ルート or 子）
-            var exited = Queue.CallExit();
-
-            // 4) Enterしたルートをランナーへ追加（次フレームからUpdate）
-            var enterdLastState = enteredThisFrame.LastOrDefault();
-            if (enterdLastState != null)
-            {
-                _runningRoot = enterdLastState;
-            }
-        }
-
-        #endregion
-
-        #region Global switching
-
         /// <summary>
         /// ステートの切り替え
         /// </summary>
         public void SwitchRoot<TEnum>(TEnum id) where TEnum : Enum
-            => SwitchRootForce(Convert.ToInt32(id));
+            => SwitchRoot(Convert.ToInt32(id));
 
-        public void SwitchRootForce(int rootId)
+        /// <summary>
+        /// ステートの切り替え
+        /// </summary>
+        /// <param name="rootId"></param>
+        public void SwitchRoot(int rootId)
         {
             if (!_roots.TryGetValue(rootId, out var target))
             {
@@ -80,13 +58,36 @@ namespace Framework.Core.State
             Queue.AddEnter(target);
         }
 
-        #endregion
-
+        /// <summary>
+        /// ステートを全て削除
+        /// </summary>
         public void Clear()
         {
             Queue.Clear();
             _roots.Clear();
             _runningRoot = null;
+        }
+
+        /// <summary>
+        /// 更新
+        /// </summary>
+        public void Update()
+        {
+            // 1) ルートEnter実行（当フレームはUpdate参加させない）
+            var enteredThisFrame = Queue.CallEnter();
+
+            // 2) 既存稼働中ルートをUpdate
+            _runningRoot?.Update();
+
+            // 3) Exit実行（ルート or 子）
+            var exited = Queue.CallExit();
+
+            // 4) Enterしたルートをランナーへ追加（次フレームからUpdate）
+            var enterdLastState = enteredThisFrame.LastOrDefault();
+            if (enterdLastState != null)
+            {
+                _runningRoot = enterdLastState;
+            }
         }
     }
 }

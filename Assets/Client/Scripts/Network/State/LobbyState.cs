@@ -5,21 +5,31 @@ namespace Network
     public class LobbyState : INetworkState
     {
         NetworkController _controller = null;
-        public LobbyState(NetworkController controller)
+        ServerController _server = null;
+
+        public LobbyState(NetworkController controller, ServerController server)
         {
             _controller = controller;
+            _server = server;
         }
 
-        // Start is called once before the first execution of Update after the MonoBehaviour is created
-        void Start()
+        public override void OnEnter()
         {
+            base.OnEnter();
 
+            _server.EnableServerConnecting(); // サーバーへの接続を有効化する
         }
 
-        // Update is called once per frame
-        void Update()
+        public override void OnUpdate()
         {
+            base.OnUpdate();
+        }
 
+        public override void OnExit()
+        {
+            _server.DisableServerConnecting(); // サーバーへの接続を無効化する
+
+            base.OnExit();
         }
     }
 }
