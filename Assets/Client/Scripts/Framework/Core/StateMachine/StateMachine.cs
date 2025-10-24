@@ -1,36 +1,75 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace Framework.Core.State
 {
-    public class StateMachine
+    public class StateMachine<TKey, TState>
+        where TState : IState<TKey, TState>
     {
-        private readonly Dictionary<int, StateContext> _roots = new();
-        private StateContext _runningRoot = null; // Update対象（ルートのみトラッキング）
-        internal readonly SwitchQueue<StateContext> Queue = new();
+        /*--- フィールド ---*/
 
-        #region Setup
+        private readonly Dictionary<TKey, StateContext<TKey, TState>> _roots = new();
+        private StateContext<TKey, TState> _runningRoot = null; // Update対象（ルートのみトラッキング）
+        internal readonly SwitchQueue<StateContext<TKey, TState>> Queue = new();
+        public TState State => _runningRoot?.State;
+        public Action OnSwitchedCallback;
 
-        /// <summary>ルートイベントを登録</summary>
-        public StateContext AddRoot<TEnum>(TEnum id, IState state, int priority = 0) where TEnum : Enum
+
+
+        /*--- メソッド ---*/
+
+        /// <summary>
+        /// ルートステートを登録
+        /// </summary>
+        public StateContext<TKey, TState> AddRoot(TKey id, TState state, int priority = 0)
         {
-            int key = Convert.ToInt32(id);
-            if (_roots.ContainsKey(key))
+            if (_roots.ContainsKey(id))
             {
-                DebugEx.LogError($"ID が既に登録されています: {key}");
-                return _roots[key];
+                DebugEx.LogError($"ID が既に登録されています: {id}");
+                return _roots[id];
             }
-            var ctx = new StateContext(key, priority, state, machine: this);
-            _roots.Add(key, ctx);
+            var ctx = new StateContext<TKey, TState>(id, priority, state, machine: this);
+            _roots.Add(id, ctx);
             return ctx;
         }
 
-        #endregion
+        /// <summary>
+        /// ステートの切り替え
+        /// </summary>
+        /// <param name="rootId"></param>
+        public void SwitchRoot(TKey rootId)
+        {
+            if (!_roots.TryGetValue(rootId, out var target))
+            {
+                DebugEx.LogError($"ステートを切り替えようとしましたが、ID が登録されていません: {rootId}");
+                return;
+            }
 
-        #region Frame
+            if (_runningRoot != null)
+            {
+                // 稼働中のステートの終了予約
+                Queue.AddExit(_runningRoot);
+            }
 
+            // 指定ルートを入場予約（次のCallEnterで入場）
+            Queue.AddEnter(target);
+        }
 
+        /// <summary>
+        /// ステートを全て削除
+        /// </summary>
+        public void Clear()
+        {
+            Queue.Clear();
+            _roots.Clear();
+            _runningRoot = null;
+        }
+
+        /// <summary>
+        /// 更新
+        /// </summary>
         public void Update()
         {
             // 1) ルートEnter実行（当フレームはUpdate参加させない）
@@ -49,8 +88,5 @@ namespace Framework.Core.State
                 _runningRoot = enterdLastState;
             }
         }
-
-        #endregion
-
     }
 }

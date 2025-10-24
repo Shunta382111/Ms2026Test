@@ -5,16 +5,23 @@ using Unity.Netcode;
 namespace Network
 {
     [Serializable]
-    public class ClientID : IEquatable<ClientID>
+    public class ClientID : INetworkSerializable, IEquatable<ClientID>
     {
-        public ulong Value = 0;
+        public ulong Value;
         public static readonly ClientID Empty = new ClientID(0);
         public ClientID(ulong id) { this.Value = id; }
+
+        public void NetworkSerialize<T>(BufferSerializer<T> serialize) where T : IReaderWriter
+        {
+            serialize.SerializeValue(ref Value);
+        }
 
         /// <summary>
         /// 等比較
         /// </summary>
         public bool Equals(ClientID other) => Value == other.Value;
+
+        public override string ToString() => Value.ToString();
     }
 
 
@@ -28,9 +35,24 @@ namespace Network
             Ready
         }
 
-        public ClientID Id = ClientID.Empty;
-        public FixedString64Bytes Name = new FixedString64Bytes();
-        public ConnectionState State = ConnectionState.Wait;
+        /*--- フィールド ---*/
+
+        public ClientID Id;
+        public FixedString64Bytes Name;
+        public ConnectionState State;
+
+
+
+
+
+        /*--- メソッド ---*/
+
+        public ClientInfo(ClientID id)
+        {
+            Id = id;
+            Name = new FixedString64Bytes();
+            State = ConnectionState.Wait;
+        }
 
         public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
         {

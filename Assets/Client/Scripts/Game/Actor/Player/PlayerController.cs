@@ -8,7 +8,7 @@ public enum PlayerState
 
 public class PlayerController : MonoBehaviour
 {
-    EventMachine _machine = new();
+    //EventMachine<IEvent> _machine = new();
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -19,6 +19,6 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        _machine.Update();
+        //_machine.Update();
     }
 }

@@ -8,43 +8,64 @@ namespace Framework.Core.Event
     /// <summary>
     /// ルート複数同時稼働・優先度選出・階層子遷移・グローバル強制切替をサポートしたイベントマシン
     /// </summary>
-    public sealed class EventMachine
+    public sealed class EventMachine<TKey, TEvent>
+        where TEvent : IEvent<TKey, TEvent>
     {
-        private readonly Dictionary<int, EventContext> _roots = new();
-        private readonly List<EventContext> _runningRoots = new(); // Update対象（ルートのみトラッキング）
-        internal readonly SwitchQueue<EventContext> Queue = new();
+        private readonly Dictionary<TKey, EventContext<TKey, TEvent>> _roots = new();
+        private readonly List<EventContext<TKey, TEvent>> _runningRoots = new(); // Update対象（ルートのみトラッキング）
+        internal readonly SwitchQueue<EventContext<TKey, TEvent>> Queue = new();
 
-        #region Setup
-
-        /// <summary>ルートイベントを登録</summary>
-        public EventContext AddRoot<TEnum>(TEnum id, IEvent ev, int priority = 0) where TEnum : Enum
+        /// <summary>
+        /// ルートイベントを登録
+        /// </summary>
+        public EventContext<TKey, TEvent> AddRoot(TKey rootId, TEvent ev, int priority = 0)
         {
-            int key = Convert.ToInt32(id);
-            if (_roots.ContainsKey(key))
+            if (_roots.ContainsKey(rootId))
             {
-                DebugEx.LogError($"Root id duplicated: {key}");
-                return _roots[key];
+                DebugEx.LogError($"ID が既に登録されています: {rootId}");
+                return _roots[rootId];
             }
-            var ctx = new EventContext(key, priority, ev, parent: null, machine: this);
-            _roots.Add(key, ctx);
+            var ctx = new EventContext<TKey, TEvent>(rootId, priority, ev, parent: null, machine: this);
+            _roots.Add(rootId, ctx);
             return ctx;
         }
 
-        /// <summary>ルートにルールを追加（自動入場に利用）</summary>
-        public void AddRootRule<TEnum>(TEnum id, IRule rule) where TEnum : Enum
+        /// <summary>
+        /// ルートにルールを追加（自動入場に利用）
+        /// </summary>
+        public void AddRootRule(TKey rootId, IRule<TKey, TEvent> rule)
         {
-            int key = Convert.ToInt32(id);
-            if (!_roots.TryGetValue(key, out var ctx))
+            if (!_roots.TryGetValue(rootId, out var ctx))
             {
-                DebugEx.LogError($"Root not found: {key}");
+                DebugEx.LogError($"イベントを切り替えようとしましたが、ID が登録されていません: {rootId}");
                 return;
             }
             ctx.AddRule(rule);
         }
 
-        #endregion
+        /// <summary>
+        /// ルートへ強制切替（優先度・ルール無視）。
+        /// exclusive=true なら現在稼働中のルートを全てExitして、指定ルートだけを入場。
+        /// exclusive=false なら、既存は残したまま指定ルートも追加で入場。
+        /// </summary>
+        public void SwitchRootForce(TKey rootId, bool exclusive = true)
+        {
+            if (!_roots.TryGetValue(rootId, out var target))
+            {
+                DebugEx.LogError($"イベントを切り替えようとしましたが、ID が登録されていません: {rootId}");
+                return;
+            }
 
-        #region Frame
+            if (exclusive)
+            {
+                // 稼働中ルートを全て終了予約
+                foreach (var r in _runningRoots.ToArray())
+                    Queue.AddExit(r);
+            }
+
+            // 指定ルートを入場予約（次のCallEnterで入場）
+            Queue.AddEnter(target);
+        }
 
         /// <summary>
         /// 1フレーム分の処理：
@@ -84,49 +105,16 @@ namespace Framework.Core.Event
             }
         }
 
-        #endregion
-
-        #region Global switching
-
-        /// <summary>
-        /// ルートへ強制切替（優先度・ルール無視）。
-        /// exclusive=true なら現在稼働中のルートを全てExitして、指定ルートだけを入場。
-        /// exclusive=false なら、既存は残したまま指定ルートも追加で入場。
-        /// </summary>
-        public void SwitchRootForce<TEnum>(TEnum id, bool exclusive = true) where TEnum : Enum
-            => SwitchRootForce(Convert.ToInt32(id), exclusive);
-
-        public void SwitchRootForce(int rootId, bool exclusive = true)
-        {
-            if (!_roots.TryGetValue(rootId, out var target))
-            {
-                DebugEx.LogError($"Root not found: {rootId}");
-                return;
-            }
-
-            if (exclusive)
-            {
-                // 稼働中ルートを全て終了予約
-                foreach (var r in _runningRoots.ToArray())
-                    Queue.AddExit(r);
-            }
-
-            // 指定ルートを入場予約（次のCallEnterで入場）
-            Queue.AddEnter(target);
-        }
-
-        #endregion
-
         #region Helpers
 
-        private IEnumerable<EventContext> SelectAutoEnterRoots()
+        private IEnumerable<EventContext<TKey, TEvent>> SelectAutoEnterRoots()
         {
             // 既に稼働していない & ルールtrue のルートを抽出
             var eligibles = _roots.Values
                 .Where(r => !_runningRoots.Contains(r) && r.CanAutoEnter())
                 .ToList();
 
-            if (eligibles.Count == 0) return Array.Empty<EventContext>();
+            if (eligibles.Count == 0) return Array.Empty<EventContext<TKey, TEvent>>();
 
             // 最大Priorityを算出し、その値を持つものだけ残す（同率は全て採用）
             int maxP = eligibles.Max(r => r.Priority);

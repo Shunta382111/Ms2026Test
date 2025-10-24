@@ -1,20 +1,22 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Framework.Core.State
 {
 	/// <summary>
 	/// ステート実行のコンテキスト
 	/// </summary>
-	public sealed class StateContext : IEnter, IExit
+	public sealed class StateContext<TKey, TState> : IEnter, IExit
+		where TState : IState<TKey, TState>
 	{
-		public int Id { get; }
+		public TKey Id { get; }
 		public int Priority { get; }
-		public IState State { get; }
-		public StateMachine Machine { get; }
+		public TState State { get; }
+		public StateMachine<TKey, TState> Machine { get; }
 
 		internal StateContext(
-			int id, int priority, IState state,
-			StateMachine machine)
+			TKey id, int priority, TState state,
+			StateMachine<TKey, TState> machine)
 		{
 			Id = id;
 			Priority = priority;
@@ -25,9 +27,7 @@ namespace Framework.Core.State
 			state?.OnInitialize();
 		}
 
-		#region Update dispatch
-
-		public void OnEnter()
+        public void OnEnter()
 		{
 			State?.OnEnter();
 		}
@@ -41,7 +41,5 @@ namespace Framework.Core.State
 		{
 			State?.OnExit();
 		}
-
-		#endregion
 	}
 }

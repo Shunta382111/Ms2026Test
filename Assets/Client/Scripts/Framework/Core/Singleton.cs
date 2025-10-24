@@ -1,15 +1,53 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Framework.Core
 {
-    public class Singleton<T> : MonoBehaviour
+    public class Singleton<T>
         where T : new()
     {
-        public static T instance { get; set; }
+        private static T _instance;
+
+        public static T Instance
+        {
+            get
+            {
+                if (_instance == null)
+                {
+                    CreateInstance();
+                }
+
+                return _instance;
+            }
+        }
 
         public static void CreateInstance()
         {
-            instance = new T();
+            _instance = new T();
+        }
+    }
+
+
+    public class SingletonBehavior<T> : SystemBehavior
+        where T : MonoBehaviour
+    {
+        private static T _instance;
+
+        public static T Instance => _instance;
+
+        public void Awake()
+        {
+            // 既に登録されているなら削除
+            if (_instance)
+            {
+                Destroy(this);
+                return;
+            }
+            // シングルトンを登録
+            else
+            {
+                _instance = this as T;
+                DontDestroyOnLoad(this);
+            }
         }
     }
 }

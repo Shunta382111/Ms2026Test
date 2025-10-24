@@ -161,8 +161,16 @@ namespace Framework
         public static void ExpectLe<T>(T lhs, T rhs, object msg) where T : IComparable<T>
             => TryExpect(lhs.CompareTo(rhs) <= 0, $"{msg} : {lhs} > {rhs}");
 
-
-
+        /// <summary>
+        /// アサートを出す
+        /// </summary>
+        /// <param name="msg"></param>
+        [Conditional("UNITY_EDITOR")]
+        public static void Assertion(object msg)
+        {
+            LogError(msg);
+            Exit();
+        }
 
 
 
@@ -180,8 +188,7 @@ namespace Framework
         private static void TryAssertion(bool isExpect,object msg)
         {
             if (isExpect) return;
-            LogError(msg);
-            Exit();
+            Assertion(msg);
         }
 
         [Conditional("UNITY_EDITOR")]
