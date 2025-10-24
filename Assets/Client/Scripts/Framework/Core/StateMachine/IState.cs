@@ -7,12 +7,12 @@ namespace Framework.Core.State
     /// <summary>
     /// イベント基底。必要に応じて継承して振る舞いを定義。
     /// </summary>
-    public abstract class IState<TState> : IEnter, IUpdate, IExit
-        where TState : IState<TState>
+    public abstract class IState<TKey, TState> : IEnter, IUpdate, IExit
+        where TState : IState<TKey, TState>
     {
-        private StateContext<TState> _ctx;
+        private StateContext<TKey, TState> _ctx;
 
-        internal void __Bind(StateContext<TState> ctx) => _ctx = ctx;
+        internal void __Bind(StateContext<TKey, TState> ctx) => _ctx = ctx;
 
         /// <summary>
         /// 生成直後に一度だけ呼ばれる
@@ -40,13 +40,7 @@ namespace Framework.Core.State
         /// <summary>
         /// ステートの切り替え
         /// </summary>
-        public void SwitchRoot(int id)
+        public void SwitchRoot(TKey id)
             => _ctx.Machine.SwitchRoot(id);
-
-        /// <summary>
-        /// ステートの切り替え
-        /// </summary>
-        public void SwitchRoot<TEnum>(TEnum id) where TEnum : Enum
-            => _ctx.Machine.SwitchRoot<TEnum>(id);
     }
 }

@@ -5,16 +5,19 @@ using Unity.Netcode;
 
 namespace Network
 {
+    public enum NetworkState
+    {
+        Lobby,
+    }
+
+
+
     public class NetworkStateController : IInjectResolver
     {
-        private enum NetworkState
-        {
-            Lobby,
-        }
 
 
 
-        private StateMachine<INetworkState> _stateMachine = new();
+        private StateMachine<NetworkState, INetworkState> _stateMachine = new();
 
         public NetworkStateController()
         {

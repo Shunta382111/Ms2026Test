@@ -5,46 +5,45 @@ using System.Linq;
 
 namespace Framework.Core.State
 {
-    public class StateMachine<TState>
-        where TState : IState<TState>
+    public class StateMachine<TKey, TState>
+        where TState : IState<TKey, TState>
     {
-        private readonly Dictionary<int, StateContext<TState>> _roots = new();
-        private StateContext<TState> _runningRoot = null; // Update対象（ルートのみトラッキング）
-        internal readonly SwitchQueue<StateContext<TState>> Queue = new();
-        public TState State => _runningRoot?.State;
+        /*--- フィールド ---*/
 
+        private readonly Dictionary<TKey, StateContext<TKey, TState>> _roots = new();
+        private StateContext<TKey, TState> _runningRoot = null; // Update対象（ルートのみトラッキング）
+        internal readonly SwitchQueue<StateContext<TKey, TState>> Queue = new();
+        public TState State => _runningRoot?.State;
+        public Action OnSwitchedCallback;
+
+
+
+        /*--- メソッド ---*/
 
         /// <summary>
         /// ルートステートを登録
         /// </summary>
-        public StateContext<TState> AddRoot<TEnum>(TEnum id, TState state, int priority = 0) where TEnum : Enum
+        public StateContext<TKey, TState> AddRoot(TKey id, TState state, int priority = 0)
         {
-            int key = Convert.ToInt32(id);
-            if (_roots.ContainsKey(key))
+            if (_roots.ContainsKey(id))
             {
-                DebugEx.LogError($"ID が既に登録されています: {key}");
-                return _roots[key];
+                DebugEx.LogError($"ID が既に登録されています: {id}");
+                return _roots[id];
             }
-            var ctx = new StateContext<TState>(key, priority, state, machine: this);
-            _roots.Add(key, ctx);
+            var ctx = new StateContext<TKey, TState>(id, priority, state, machine: this);
+            _roots.Add(id, ctx);
             return ctx;
         }
 
         /// <summary>
         /// ステートの切り替え
         /// </summary>
-        public void SwitchRoot<TEnum>(TEnum id) where TEnum : Enum
-            => SwitchRoot(Convert.ToInt32(id));
-
-        /// <summary>
-        /// ステートの切り替え
-        /// </summary>
         /// <param name="rootId"></param>
-        public void SwitchRoot(int rootId)
+        public void SwitchRoot(TKey rootId)
         {
             if (!_roots.TryGetValue(rootId, out var target))
             {
-                DebugEx.LogError($"Root not found: {rootId}");
+                DebugEx.LogError($"ステートを切り替えようとしましたが、ID が登録されていません: {rootId}");
                 return;
             }
 

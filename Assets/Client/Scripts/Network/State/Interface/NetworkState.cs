@@ -3,7 +3,7 @@ using Framework.Core.State;
 
 namespace Network
 {
-    public class INetworkState : IState<INetworkState>
+    public class INetworkState : IState<NetworkState, INetworkState>
     {
         /// <summary>
         /// [サーバー] クライアントから接続が発生

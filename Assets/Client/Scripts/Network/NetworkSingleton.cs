@@ -1,28 +1,29 @@
-﻿using Unity.Netcode;
+﻿using Framework.Core;
+using Unity.Netcode;
 
 namespace Network
 {
     public class NetworkSingleton<T> : NetworkBehaviour
-        where T : new()
+        where T : NetworkBehaviour
     {
         private static T _instance;
 
-        public static T Instance
+        public static T Instance => _instance;
+
+        public void Awake()
         {
-            get
+            // 既に登録されているなら削除
+            if (_instance)
             {
-                if (_instance == null)
-                {
-                    CreateInstance();
-                }
-
-                return _instance;
+                Destroy(this);
+                return;
             }
-        }
-
-        public static void CreateInstance()
-        {
-            _instance = new T();
+            // シングルトンを登録
+            else
+            {
+                _instance = this as T;
+                DontDestroyOnLoad(this);
+            }
         }
     }
 }
