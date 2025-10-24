@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Framework.Core.State
 {
@@ -26,9 +27,7 @@ namespace Framework.Core.State
 			state?.OnInitialize();
 		}
 
-		#region Update dispatch
-
-		public void OnEnter()
+        public void OnEnter()
 		{
 			State?.OnEnter();
 		}
@@ -42,7 +41,5 @@ namespace Framework.Core.State
 		{
 			State?.OnExit();
 		}
-
-		#endregion
 	}
 }

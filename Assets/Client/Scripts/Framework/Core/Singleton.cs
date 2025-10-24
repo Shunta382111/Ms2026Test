@@ -5,11 +5,24 @@ namespace Framework.Core
     public class Singleton<T> : MonoBehaviour
         where T : new()
     {
-        public static T Instance { get; set; }
+        private static T _instance;
+
+        public static T Instance
+        {
+            get
+            {
+                if (_instance == null)
+                {
+                    CreateInstance();
+                }
+
+                return _instance;
+            }
+        }
 
         public static void CreateInstance()
         {
-            Instance = new T();
+            _instance = new T();
         }
     }
 }

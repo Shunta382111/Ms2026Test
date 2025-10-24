@@ -5,22 +5,23 @@ namespace Framework.Core.Event
     /// <summary>
     /// イベント実行のコンテキスト（階層・親子関係・子の現在状態などを保持）
     /// </summary>
-    public sealed class EventContext : IEnter, IExit
+    public sealed class EventContext<TEvent> : IEnter, IExit
+        where TEvent : IEvent<TEvent>
     {
         public int Id { get; }
         public int Priority { get; }
-        public IEvent Event { get; }
-        public EventContext Parent { get; }
-        public EventMachine Machine { get; }
+        public TEvent Event { get; }
+        public EventContext<TEvent> Parent { get; }
+        public EventMachine<TEvent> Machine { get; }
 
-        private readonly Dictionary<int, EventContext> _children = new();
-        private readonly List<IRule> _rules = new(); // 自動入場（主にルート用）
-        private EventContext _activeChild;           // 現在アクティブな子（nullなら自分を更新）
-        private EventContext _pendingEnterChild;     // 次フレームにEnter予定の子
+        private readonly Dictionary<int, EventContext<TEvent>> _children = new();
+        private readonly List<IRule<TEvent>> _rules = new(); // 自動入場（主にルート用）
+        private EventContext<TEvent> _activeChild;           // 現在アクティブな子（nullなら自分を更新）
+        private EventContext<TEvent> _pendingEnterChild;     // 次フレームにEnter予定の子
 
         internal EventContext(
-            int id, int priority, IEvent ev,
-            EventContext parent, EventMachine machine)
+            int id, int priority, TEvent ev,
+            EventContext<TEvent> parent, EventMachine<TEvent> machine)
         {
             Id = id;
             Priority = priority;
@@ -32,9 +33,7 @@ namespace Framework.Core.Event
             ev?.OnInitialize();
         }
 
-        #region Rules (主にルートで使用)
-
-        public void AddRule(IRule rule)
+        public void AddRule(IRule<TEvent> rule)
         {
             if (rule == null) { DebugEx.LogWarning("Rule is null"); return; }
             _rules.Add(rule);
@@ -55,20 +54,16 @@ namespace Framework.Core.Event
             return false;
         }
 
-        #endregion
+        public IEnumerable<EventContext<TEvent>> Children => _children.Values;
 
-        #region Children
-
-        public IEnumerable<EventContext> Children => _children.Values;
-
-        public void AddChild(int id, IEvent ev, int priority = 0)
+        public void AddChild(int id, TEvent ev, int priority = 0)
         {
             if (_children.ContainsKey(id))
             {
                 DebugEx.LogError($"Child id already exists: {id}");
                 return;
             }
-            var ctx = new EventContext(id, priority, ev, this, Machine);
+            var ctx = new EventContext<TEvent>(id, priority, ev, this, Machine);
             _children.Add(id, ctx);
         }
 
@@ -113,10 +108,6 @@ namespace Framework.Core.Event
             });
         }
 
-        #endregion
-
-        #region Update dispatch
-
         public void OnEnter()
         {
             Event?.OnEnter();
@@ -143,7 +134,5 @@ namespace Framework.Core.Event
                 _activeChild = null;
             }
         }
-
-        #endregion
     }
 }
