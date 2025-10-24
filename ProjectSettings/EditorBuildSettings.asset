@@ -6,6 +6,7 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+
     path: Assets/Client/Scenes/MatchingScene.unity
     guid: ff53c777ed239bc499bc71646a0ddad0
   m_configObjects:
